@@ -152,7 +152,7 @@ dim(allstar)
 
 ## Plot 1
 
-This plot is a logistic model of the relationship between the number of points a player has and the probability that their team wins. The initial point is 0.5, suggesting there is an equal probability that a player's team will win or lose when they have zero points, but every additional point increases the likelihood of the player's team win.
+This plot is a logistic model of the relationship between the number of points a player has and the odds that their team wins. The initial point is 0.5, suggesting there is an equal probability that a player's team will win or lose when they have zero points, but every additional point increases the likelihood of the player's team win.
 
 ```{r}
 ggplot(allstar, aes(x = pts, y = as.numeric(isWin))) +
@@ -336,15 +336,23 @@ This is a good model because we can see that the p-values for each of the coeffi
 summary(basketball_model_1)
 ```
 
-team_pts -> The probability of a team winning increases by 0.0167 for every point that the team scores in the game.
+```{r}
+exp(0.0166696)
+exp(0.0060311)
+exp(0.0108621)
+exp(0.0202760)
+exp(0.0188160)
+```
 
-team_ast -> The probability of a team winning increases by 0.0060 for every assist that the team achieves in the game.
+team_pts -> The odds of a team winning increases by 0.016809 for every point that the team scores in the game.
 
-team_reb -> The probability of a team winning increases by 0.02028 for every rebound that the team has during the game.
+team_ast -> The odds of a team winning increases by 0.006049 for every assist that the team achieves in the game.
 
-team_stl -> The probability of a team winning increases by 0.01882 for every steal that the team has during the game.
+team_reb -> The odds of a team winning increases by 0.010921 for every rebound that the team has during the game.
 
-team_blk -> The probability of a team winning increases by 0.01086 for every block that the team has during the game.
+team_stl -> The odds of a team winning increases by 0.01882 for every steal that the team has during the game.
+
+team_blk -> The odds of a team winning increases by 0.018994 for every block that the team has during the game.
 
 
 
@@ -459,19 +467,24 @@ This is a good model that is statistically significant because the p-values are 
 
 ```{r}
 summary(basketball_model_3)
+exp(0.0018022)
+exp(0.0063441)
+exp(0.0130974)
+exp(0.0019758)
+exp(0.0061076)
 ```
 
 
 
-pts -> The probability of a team winning increases by 0.0018 for every point that a player scores in the game.
+pts -> The odds of a team winning increases by 0.001804 for every point that a player scores in the game.
 
-team_ast -> The probability of a team winning increases by 0.0063 for every assist that a player achieves in the game.
+team_ast -> The odds of a team winning increases by 0.006364 for every assist that a player achieves in the game.
 
-team_reb -> The probability of a team winning increases by 0.0020 for every rebound that a player has during the game.
+team_reb -> The odds of a team winning increases by 0.013184 for every rebound that a player has during the game.
 
-team_stl -> The probability of a team winning increases by 0.0061 for every steal that a player has during the game.
+team_stl -> The odds of a team winning increases by 0.001978 for every steal that a player has during the game.
 
-team_blk -> The probability of a team winning increases by 0.0131 for every block that a player has during the game.
+team_blk -> The odds of a team winning increases by 0.006126 for every block that a player has during the game.
 
 
 \
@@ -523,9 +536,11 @@ This is a good model since the p-value associated with the model is extremely sm
 
 ```{r}
 summary(basketball_model_4)
+
+exp(0.095100)
 ```
 
-locationGameH -> The probability of a team winning a game is 0.095, or around 9.5%, higher for games that are played at home than when a game is away. This means home teams are 9.5% more likely to win than away teams, so according to this model home-court advantage is significant.
+locationGameH -> The odds of a team winning a game is 0.099 higher for games that are played at home than when a game is away. This means home teams are 9.9% more likely to win than away teams, so according to this model home-court advantage is significant.
 
 \
 

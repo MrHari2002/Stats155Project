@@ -1,0 +1,570 @@
+---
+title: "STAT 155 mini-project: Phase 2"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+
+# Group members
+
+List the full name of each member in your group. (This should be the same as in Phase 1.)
+
+Hengrui Jia
+Ben Sheppard
+\
+\
+
+
+
+
+
+# Data
+
+What data set will you use for the mini-project? (This should be the same as in Phase 1.)
+
+
+We will be using the nbastatR, and more specifically the game logs sub set, data set for the mini-project. The game logs sub set of the nbastatR dataset is an extremely detailed data set that contains every NBA statistic from every season, as well as the outcome of every game.
+
+
+
+\
+\
+
+
+
+# Research questions
+
+Name at least two research questions that you plan to answer using this data. These might have evolved since Phase 1.
+
+
+- Question 1:
+
+Which individual stat is the best predictor for whether or not their team will win?
+
+- Question 2:
+
+Which team stat is the best predictor for whether or not their team will win?
+
+- Question 3:
+
+Which individual stat is most impacted by whether the game is home or away?
+
+- Question 4:
+
+What is the actual home-court advantage? (How is the likelihood of a team winning impacted by the location of a game.)
+
+
+\
+\
+
+
+
+# Getting started with the data
+
+Using the chunks below, in this section you will:
+
+- Load the data in RStudio.
+- Check its dimensions (how many rows and variables are there?).
+- Create and discuss 3--6 data visualizations that provide some insight into the research questions you outlined above. NOTE:    
+    - Your visualizations might have evolved since Phase 1.
+    - New since Phase 1: For each visualization, use meaningful axis labels (not just the name of the variables in your dataset).
+
+
+## Loading the data & checking the dimensions
+
+```{r}
+# Load the data
+ library (dplyr)
+ library(ggplot2)
+ library(nbastatR)
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2)
+gamedata <- game_logs (seasons = 2022)
+# Calculate the dimensions
+
+dim(gamedata)
+```
+
+# Calculate the dimensions
+
+```{r}
+dim(gamedata)
+```
+
+```{r}
+# Because of the very large amount of data here, we will be narrowing the field down to the 25 NBA all stars from this previous season.
+
+
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_pts = sum(pts)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_ast = sum(ast)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_reb = sum(treb)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_stl = sum(stl)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_blk = sum(blk)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_pctFG = mean(pctFG)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_pctFG3 = mean(pctFG3)) %>%
+  right_join(., gamedata)
+
+gamedata <- gamedata %>%
+  group_by(nameTeam, dateGame) %>%
+  summarize(team_pctFT = mean(pctFT)) %>%
+  right_join(., gamedata)
+
+allstar <- gamedata%>%
+  filter(namePlayer %in% c("Giannis Antetokounmpo", "LeBron James", "Kevin Durant", "Stephen Curry", "Joel Embiid", "Ja Morant", "Jayson Tatum", "Andrew Wiggins", "Trae Young", "LaMelo Ball", "Devin Booker", "Rudy Gobert", "KhrisMiddleton", "Zach Lavine", "Dejounte Murray", "Karl-Anthony Towns", "Draymond Green", "DeMar DeRozan",  "Nikola Jokic",  "Jarrett Allen","Jimmy Butler",  "Luka Doncic", "Darius Garland", "James Harden", "Donovan Mitchell", "Chris Paul", "Fred VanVleet"))
+
+dim(allstar)
+
+```
+
+
+
+
+\
+
+
+## Plot 1
+
+This plot is a logistic model of the relationship between the number of points a player has and the probability that their team wins. The initial point is 0.5, suggesting there is an equal probability that a player's team will win or lose when they have zero points, but every additional point increases the likelihood of the player's team win.
+
+```{r}
+ggplot(allstar, aes(x = pts, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+\
+
+
+
+## Plot 2
+
+This is a logistic model of the relationship between the field goal percentage that a player shoots in a game and the probability of their team winning. As can be expected, the overall likelihood of victory increases as the players field goal percentage increases. Its very interesting that the probability of victory crosses 50% when the players field goal percentage crosses around 33%, even though this is generally considered a bad field goal percentage.
+
+```{r}
+# Plot 2
+
+ggplot(allstar, aes(x = pctFG, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+\
+
+
+## Plot 3
+
+This is a logistic model of the relationship between the amount of turnovers that a player has in a game and the probability of their team winning. As can be expected, the overall likelihood of victory decreases for every additional turnover that a player has. However, what is unexpected is that the probability of a win does not decrease below 50% until a player has roughly 8.75
+
+
+```{r}
+# Plot 3
+
+ggplot(allstar, aes(x = tov, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+\
+
+
+## Plot 4 (if you have one)
+
+This is a logistic model of the relationship between a team's 3-point field goal percentage in a game and the probability of their team winning. The chart shows the overall likelihood of victory increases as the teams 3-point field goal percentage increases. The initial point of this graph is around 0.25, which means that the probability of victory for the team that made the lowest percentage of 3-point shots in a game this season (which appears to be around ~ 0.1), then the team would have a probability of winning of about 0.25.
+
+```{r}
+# Plot 4
+
+ggplot(gamedata, aes(x = team_pctFG3, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+\
+
+
+## Plot 5 (if you have one)
+
+This is a logistic model of the relationship between a team's amount of assists in a game and the probability of their team winning. The chart shows the overall likelihood of victory increases as the teams assists increase. The graph initially increases slowly, but as the assist numbers approach 25, the probability of winning increases much more quickly, until it eventually flattens again.
+
+
+```{r}
+# Plot 5
+
+ggplot(gamedata, aes(x = team_ast, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+
+\
+\
+
+
+
+\
+
+
+## Plot 6 (if you have one)
+
+(Discuss the plot here.)
+
+
+```{r}
+# Plot 6
+
+ggplot(gamedata, aes(x = team_stl, y = as.numeric(isWin))) +
+  geom_jitter() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
+  ylab("Probability of a Win")
+
+```
+
+
+
+
+
+\
+\
+
+
+
+
+
+# Models
+
+In the sections below, construct and discuss 2--4 models that inform your research questions. Don't start with the most complicated model you can think of. This is almost always wrong and tough to interpret if you don't build up to it. Instead, start with a simple model and build up from there. For each model, you will:   
+
+- Specify your model assumptions (eg: is this "normal" or "logistic" regression?).
+- Discuss whether this is a "good" model (and include evidence that supports this discussion).
+- Interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.
+- RECOMMENDED but OPTIONAL: Do some inference. What do the confidence intervals and hypothesis tests allow you to conclude about the broader population of interest? (You'll need to do this for the final presentation, so should start now if you can.)
+
+
+\
+\
+
+
+
+
+## Model 1
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+basketball_model_1 <- glm(isWin ~ team_pts + team_ast + team_blk + team_reb + team_stl, data = gamedata)
+
+summary(basketball_model_1)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+We utilized a logistic regression for the model because we are using quantitative variables to predict a binary categorical variable on the y-axis.
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+This is a good model because we can see that the p-values for each of the coefficients of the models are extremely small, so these relationships are very likely to exist as they are extremely unlikely to have been seen due to random chance.
+
+
+
+
+\
+
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+```{r}
+summary(basketball_model_1)
+```
+
+team_pts -> The probability of a team winning increases by 0.0167 for every point that the team scores in the game.
+
+team_ast -> The probability of a team winning increases by 0.0060 for every assist that the team achieves in the game.
+
+team_reb -> The probability of a team winning increases by 0.02028 for every rebound that the team has during the game.
+
+team_stl -> The probability of a team winning increases by 0.01882 for every steal that the team has during the game.
+
+team_blk -> The probability of a team winning increases by 0.01086 for every block that the team has during the game.
+
+
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+
+\
+\
+
+
+
+## Model 2
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+
+basketball_model_2 <- lm(team_pts ~ locationGame,data = gamedata)
+
+summary(basketball_model_2)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+
+We assume that there exists a linear regression between teams pts and locationGame since the thing being predicted is quantitative.
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+This is not a good model as the R-squared value is 0.0055, so the model only predicts 0.55% of the variation of the points that a player scores. However, the model does yield statistically significant results.
+
+
+
+\ 
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+```{r}
+summary(basketball_model_2)
+```
+
+The locationGameH variable shows that teams score an average of two points more per game at home than when they play away from home. This means that the "home-court advantage" is not that significant, as teams only score two more points on average when they are at home.
+
+
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+
+
+\
+\
+
+
+## Model 3 (delete if you don't have a model 3)
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+basketball_model_3<- glm(isWin ~ pts + ast + blk + treb + stl, data = gamedata)
+
+summary(basketball_model_3)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+This is a logistic regression model since the variable that is being predicted is a binary categorical variable.
+
+
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+This is a good model that is statistically significant because the p-values are extremely small, meaning that a relationship is extremely likely.
+
+
+
+
+
+\ 
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+```{r}
+summary(basketball_model_3)
+```
+
+
+
+pts -> The probability of a team winning increases by 0.0018 for every point that a player scores in the game.
+
+team_ast -> The probability of a team winning increases by 0.0063 for every assist that a player achieves in the game.
+
+team_reb -> The probability of a team winning increases by 0.0020 for every rebound that a player has during the game.
+
+team_stl -> The probability of a team winning increases by 0.0061 for every steal that a player has during the game.
+
+team_blk -> The probability of a team winning increases by 0.0131 for every block that a player has during the game.
+
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+\
+\
+
+
+## Model 4 (delete if you don't have a model 4)
+
+**Construct and save your model using lm() or glm()**
+
+```{r}
+basketball_model_4<- glm(isWin ~ locationGame, data = gamedata)
+
+summary(basketball_model_4)
+```
+
+
+\
+
+
+**Specify your model assumptions (eg: is this "normal" or "logistic" regression?)**
+
+
+This is a logistic regression since the variable being predicted is a binary categorical variable.
+
+
+\
+
+**Discuss whether this is a "good" model (and include evidence that supports this discussion)**    
+
+
+This is a good model since the p-value associated with the model is extremely small, so the relationship is very likely to exist rather than just existing by chance.
+
+
+\ 
+
+**Report a model `summary()` table and interpret your model coefficients. If you have a lot of coefficients, focus on the main points of interest.**
+
+
+```{r}
+summary(basketball_model_4)
+```
+
+locationGameH -> The probability of a team winning a game is 0.095, or around 9.5%, higher for games that are played at home than when a game is away. This means home teams are 9.5% more likely to win than away teams, so according to this model home-court advantage is significant.
+
+\
+
+
+**Optional but recommended: Check out and discussion some confidence intervals / hypothesis tests.**
+
+
+
+
+
+
+\
+\
+
+
+
+
+# Reflection
+
+Based on what you've done thus far, in ONE sentence each, summarize 2 key takeaways. (Or, what are 2 points that you'd want your audience to remember?) NOTE: The one-sentence limit reflects the importance of providing clear and concise takeaways.
+
+- Key takeaway 1:
+
+  We want the audience to remember that the home court advantages does ya significant advantage to a team's ability to win, but that it doesn't necessarily affect one particular statistic the most.
+
+- Key takeaway 2:
+
+We want the audience to note that no one individual statistic impacts a player's teams ability to win in a way much larger than the rest, but rather they all play a part together and collectively result in a significant impact on their team's likelihood of winning.
+
+
+
+
+
+\
+\
+
+
+# Collaboration
+
+Each *individual* group member must fill out this form which reflects upon their own contributions, and those of others, during Phase 2 of the project:
+
+https://forms.gle/ENXMCeNVC1gCXBvr5

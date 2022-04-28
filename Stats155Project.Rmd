@@ -305,7 +305,15 @@ In the sections below, construct and discuss 2--4 models that inform your resear
 **Construct and save your model using lm() or glm()**
 
 ```{r}
-basketball_model_1 <- glm(isWin ~ team_pts + team_ast + team_blk + team_reb + team_stl, data = gamedata)
+# Building a team stats that has only team stats
+team_stats <- 
+  gamedata %>%
+  select(nameTeam,idGame,locationGame, team_pts,team_ast,team_blk,team_reb,team_stl,isWin) %>%
+  arrange(idGame) %>%
+  unique()
+  
+  
+basketball_model_1 <- glm(isWin ~ team_pts + team_ast + team_blk + team_reb + team_stl, data = team_stats)
 
 summary(basketball_model_1)
 ```
@@ -334,26 +342,27 @@ This is a good model because we can see that the p-values for each of the coeffi
 
 
 ```{r}
+
 summary(basketball_model_1)
 ```
 
 ```{r}
-exp(0.0166696)
-exp(0.0060311)
-exp(0.0108621)
-exp(0.0202760)
-exp(0.0188160)
+exp(0.016504)
+exp(0.005608)
+exp(0.011248)
+exp(0.019853)
+exp(0.018114)
 ```
 Each the interpreation below is interpreted controlling for other predicators in the model
-team_pts -> The odds of a team winning increases by 1.6809 percent for every point that the team scores in the game.
+team_pts -> The odds of a team winning increases by 1.6641 percent for every point that the team scores in the game.
 
-team_ast -> The odds of a team winning increases by 0.6049 percent for every assist that the team achieves in the game.
+team_ast -> The odds of a team winning increases by 0.5624 percent for every assist that the team achieves in the game.
 
-team_reb -> The odds of a team winning increases by 1.0921 percent for every rebound that the team has during the game.
+team_reb -> The odds of a team winning increases by 1.1311 percent for every rebound that the team has during the game.
 
-team_stl -> The odds of a team winning increases by 1.882 percent for every steal that the team has during the game.
+team_stl -> The odds of a team winning increases by 2.0051 percent for every steal that the team has during the game.
 
-team_blk -> The odds of a team winning increases by 1.8994 percent for every block that the team has during the game.
+team_blk -> The odds of a team winning increases by 1.8279 percent for every block that the team has during the game.
 
 
 
@@ -477,15 +486,15 @@ exp(0.0061076)
 
 
 
-pts -> The odds of a team winning increases by 0.001804 for every point that a player scores in the game.
+pts -> The odds of a team winning increases by 1.804 percents for every point that a player scores in the game.
 
-team_ast -> The odds of a team winning increases by 0.006364 for every assist that a player achieves in the game.
+team_ast -> The odds of a team winning increases by 0.6364 percents for every assist that a player achieves in the game.
 
-team_reb -> The odds of a team winning increases by 0.013184 for every rebound that a player has during the game.
+team_reb -> The odds of a team winning increases by 1.3184 percents for every rebound that a player has during the game.
 
-team_stl -> The odds of a team winning increases by 0.001978 for every steal that a player has during the game.
+team_stl -> The odds of a team winning increases by 0.1978 percents for every steal that a player has during the game.
 
-team_blk -> The odds of a team winning increases by 0.006126 for every block that a player has during the game.
+team_blk -> The odds of a team winning increases by 0.6126 percents for every block that a player has during the game.
 
 
 \
@@ -507,20 +516,31 @@ team_blk -> The odds of a team winning increases by 0.006126 for every block tha
 **Construct and save your model using lm() or glm()**
 ```{r}
 
-HomeTeamData <- gamedata %>% 
+TeamData <- gamedata %>% 
   select(nameTeam, idGame, locationGame, isWin, slugMatchup, team_pts) %>%
   arrange(idGame) %>%
   unique()
 
-HomeTeamData %>% filter(locationGame == "H",isWin==TRUE) %>% count()
-HomeTeamData %>% filter(locationGame == "H") %>% summarise(n())
+TeamData %>% 
+  ungroup() %>%
+  filter(locationGame == "H",isWin==TRUE) %>% 
+  count()
 
+TeamData %>% 
+  ungroup %>%
+  filter(locationGame == "H") %>% 
+  count()
+
+TeamData %>%
+  ungroup() %>%
+  count()
+
+
+# Homecourt winning percentage 
+669/1230
 ```
 
 ```{r}
-basketball_model_4<- glm(isWin ~ locationGame, data = gamedata)
-
-summary(basketball_model_4)
 ```
 
 
@@ -547,9 +567,6 @@ This is a good model since the p-value associated with the model is extremely sm
 
 
 ```{r}
-summary(basketball_model_4)
-
-exp(0.095100)/(exp(0.095100)+1)
 
 #These were commented out considering that 
 #filter(gamedataWithOutTeam,locationGame=="H",isWin==TRUE) %>% summarize(n())

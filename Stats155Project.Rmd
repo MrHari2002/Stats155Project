@@ -81,6 +81,7 @@ Using the chunks below, in this section you will:
  library(nbastatR)
 Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2)
 gamedata <- game_logs (seasons = 2022)
+gamedataWithOutTeam <- game_logs (seasons = 2022)
 # Calculate the dimensions
 
 dim(gamedata)
@@ -343,16 +344,16 @@ exp(0.0108621)
 exp(0.0202760)
 exp(0.0188160)
 ```
+Each the interpreation below is interpreted controlling for other predicators in the model
+team_pts -> The odds of a team winning increases by 1.6809 percent for every point that the team scores in the game.
 
-team_pts -> The odds of a team winning increases by 0.016809 for every point that the team scores in the game.
+team_ast -> The odds of a team winning increases by 0.6049 percent for every assist that the team achieves in the game.
 
-team_ast -> The odds of a team winning increases by 0.006049 for every assist that the team achieves in the game.
+team_reb -> The odds of a team winning increases by 1.0921 percent for every rebound that the team has during the game.
 
-team_reb -> The odds of a team winning increases by 0.010921 for every rebound that the team has during the game.
+team_stl -> The odds of a team winning increases by 1.882 percent for every steal that the team has during the game.
 
-team_stl -> The odds of a team winning increases by 0.01882 for every steal that the team has during the game.
-
-team_blk -> The odds of a team winning increases by 0.018994 for every block that the team has during the game.
+team_blk -> The odds of a team winning increases by 1.8994 percent for every block that the team has during the game.
 
 
 
@@ -504,6 +505,17 @@ team_blk -> The odds of a team winning increases by 0.006126 for every block tha
 ## Model 4 (delete if you don't have a model 4)
 
 **Construct and save your model using lm() or glm()**
+```{r}
+
+HomeTeamData <- gamedata %>% 
+  select(nameTeam, idGame, locationGame, isWin, slugMatchup, team_pts) %>%
+  arrange(idGame) %>%
+  unique()
+
+HomeTeamData %>% filter(locationGame == "H",isWin==TRUE) %>% count()
+HomeTeamData %>% filter(locationGame == "H") %>% summarise(n())
+
+```
 
 ```{r}
 basketball_model_4<- glm(isWin ~ locationGame, data = gamedata)
@@ -537,10 +549,20 @@ This is a good model since the p-value associated with the model is extremely sm
 ```{r}
 summary(basketball_model_4)
 
-exp(0.095100)
+exp(0.095100)/(exp(0.095100)+1)
+
+#These were commented out considering that 
+#filter(gamedataWithOutTeam,locationGame=="H",isWin==TRUE) %>% summarize(n())
+#filter(gamedataWithOutTeam,locationGame=="H") %>% summarize(n())
+#7203/13067
+#filter(gamedataWithOutTeam,locationGame=="A",isWin==TRUE) %>% summarize(n())
+#5917/12972
+#filter(gamedataWithOutTeam,locationGame=="A") %>% summarize(n())
+
+
 ```
 
-locationGameH -> The odds of a team winning a game is 0.099 higher for games that are played at home than when a game is away. This means home teams are 9.9% more likely to win than away teams, so according to this model home-court advantage is significant.
+locationGameH -> The odds of a team winning a game is 0.099 higher for games that are played at home than when a game is away. Hometeams has 52% chances of winning in total, so according to this model home-court advantage is significant.
 
 \
 

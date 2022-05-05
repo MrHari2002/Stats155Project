@@ -1,6 +1,6 @@
 ---
-title: "STAT 155 mini-project: Phase 2"
-output: 
+title: "STAT 155 mini-project"
+output:
   html_document:
     toc: true
     toc_float: true
@@ -49,7 +49,7 @@ Which team stat is the best predictor for whether or not their team will win?
 
 - Question 3:
 
-Which individual stat is most impacted by whether the game is home or away?
+Which stat is most impacted by whether the game is home or away?
 
 - Question 4:
 
@@ -156,10 +156,10 @@ dim(allstar)
 This plot is a logistic model of the relationship between the number of points a player has and the odds that their team wins. The initial point is 0.5, suggesting there is an equal probability that a player's team will win or lose when they have zero points, but every additional point increases the likelihood of the player's team win.
 
 ```{r}
-ggplot(allstar, aes(x = pts, y = as.numeric(isWin))) +
+ggplot(gamedata, aes(x = pts, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not")+xlab("Pts scored by a indiviual player in the game")
 
 ```
 
@@ -177,10 +177,10 @@ This is a logistic model of the relationship between the field goal percentage t
 ```{r}
 # Plot 2
 
-ggplot(allstar, aes(x = pctFG, y = as.numeric(isWin))) +
+ggplot(gamedata, aes(x = pctFG, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not") + xlab("pctFG by a indiviual player")
 
 ```
 
@@ -198,10 +198,10 @@ This is a logistic model of the relationship between the amount of turnovers tha
 ```{r}
 # Plot 3
 
-ggplot(allstar, aes(x = tov, y = as.numeric(isWin))) +
+ggplot(gamedata, aes(x = tov, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not")+xlab("tov by an indiviual player")
 
 ```
 
@@ -221,7 +221,7 @@ This is a logistic model of the relationship between a team's 3-point field goal
 ggplot(gamedata, aes(x = team_pctFG3, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not")+xlab("team_pctFG3")
 
 ```
 
@@ -242,7 +242,7 @@ This is a logistic model of the relationship between a team's amount of assists 
 ggplot(gamedata, aes(x = team_ast, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not")+xlab("Total Team Assists")
 
 ```
 
@@ -269,7 +269,7 @@ ggplot(gamedata, aes(x = team_ast, y = as.numeric(isWin))) +
 ggplot(gamedata, aes(x = team_stl, y = as.numeric(isWin))) +
   geom_jitter() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, fullrange = TRUE) +
-  ylab("Probability of a Win")
+  ylab("Is Win Or Not")+xlab("Total Team Steals")
 
 ```
 
@@ -279,6 +279,24 @@ ggplot(gamedata, aes(x = team_stl, y = as.numeric(isWin))) +
 
 \
 \
+```{r}
+ggplot(gamedata, aes(y = team_pts,x = locationGame)) +
+  geom_boxplot()
+
+ggplot(gamedata, aes(y = team_ast,x = locationGame)) +
+  geom_boxplot()
+
+ggplot(gamedata, aes(y = team_stl,x = locationGame)) +
+  geom_boxplot()
+
+ggplot(gamedata, aes(y = team_reb,x = locationGame)) +
+  geom_boxplot()
+
+ggplot(gamedata, aes(y = team_blk,x = locationGame)) +
+  geom_boxplot()
+
+
+```
 
 
 
@@ -313,7 +331,8 @@ team_stats <-
   unique()
   
   
-basketball_model_1 <- glm(isWin ~ team_pts + team_ast + team_blk + team_reb + team_stl, data = team_stats)
+basketball_model_1 <- 
+  glm(isWin ~ team_pts + team_ast + team_blk + team_reb + team_stl, data = team_stats)
 
 summary(basketball_model_1)
 ```
@@ -342,7 +361,6 @@ This is a good model because we can see that the p-values for each of the coeffi
 
 
 ```{r}
-
 summary(basketball_model_1)
 ```
 
@@ -354,15 +372,16 @@ exp(0.019853)
 exp(0.018114)
 ```
 Each the interpreation below is interpreted controlling for other predicators in the model
+
 team_pts -> The odds of a team winning increases by 1.6641 percent for every point that the team scores in the game.
 
 team_ast -> The odds of a team winning increases by 0.5624 percent for every assist that the team achieves in the game.
 
-team_reb -> The odds of a team winning increases by 1.1311 percent for every rebound that the team has during the game.
+team_blk -> The odds of a team winning increases by 1.1311 percent for every block that the team has during the game.
 
-team_stl -> The odds of a team winning increases by 2.0051 percent for every steal that the team has during the game.
+team_reb -> The odds of a team winning increases by 2.0051 percent for every rebound that the team has during the game.
 
-team_blk -> The odds of a team winning increases by 1.8279 percent for every block that the team has during the game.
+team_stl -> The odds of a team winning increases by 1.8279 percent for every steal that the team has during the game.
 
 
 
@@ -388,7 +407,8 @@ team_blk -> The odds of a team winning increases by 1.8279 percent for every blo
 
 ```{r}
 
-basketball_model_2 <- lm(team_pts ~ locationGame,data = gamedata)
+basketball_model_2 <- 
+  lm(team_pts ~ locationGame,data = gamedata)
 
 summary(basketball_model_2)
 ```
@@ -486,15 +506,15 @@ exp(0.0061076)
 
 
 
-pts -> The odds of a team winning increases by 1.804 percents for every point that a player scores in the game.
+pts -> The odds of a team winning increases by 0.1804 percents for every point that a player scores in the game.
 
-team_ast -> The odds of a team winning increases by 0.6364 percents for every assist that a player achieves in the game.
+ast -> The odds of a team winning increases by 0.6364 percents for every assist that a player achieves in the game.
 
-team_reb -> The odds of a team winning increases by 1.3184 percents for every rebound that a player has during the game.
+blk -> The odds of a team winning increases by 1.3184 percents for every block that a player has during the game.
 
-team_stl -> The odds of a team winning increases by 0.1978 percents for every steal that a player has during the game.
+treb -> The odds of a team winning increases by 0.1978 percents for every rebound that a player has during the game.
 
-team_blk -> The odds of a team winning increases by 0.6126 percents for every block that a player has during the game.
+stl -> The odds of a team winning increases by 0.6126 percents for every steal that a player has during the game.
 
 
 \
